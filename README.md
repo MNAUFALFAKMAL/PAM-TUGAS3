@@ -57,3 +57,63 @@ com.example.myfirstkmpapp
 ├── ui/
 │   └── ProfileScreen.kt       # Komponen visual (Stateless UI)
 └── App.kt                     # Entry point & Pengaturan Tema Aplikasi
+```
+
+# Tugas 5 - Multi-Screen Navigation & Integrated Notes App
+
+Pada iterasi terbaru ini, aplikasi telah berevolusi dari *single-screen* menjadi arsitektur **Multi-Screen** yang kompleks menggunakan **Compose Navigation**. Selain itu, fitur *Notes* (Catatan) telah dikembangkan menjadi fitur fungsional penuh (CRUD) yang terintegrasi secara mulus dengan *Profile App* dari Tugas 4.
+
+## 📸 Bukti Layar (Screenshots)
+
+Tampilan di bawah ini mendemonstrasikan hasil dari perpindahan antar layar (routing) beserta status pengiriman argumen data:
+
+| Daftar Catatan (Notes) | Detail & Hapus Catatan | Form Tambah/Edit |
+| :---: | :---: | :---: |
+| <img width="430" height="943" alt="Image" src="https://github.com/user-attachments/assets/479bcd37-7c33-4f2b-8b4d-df341779058c" />
+| <img width="430" height="943" alt="Image" src="https://github.com/user-attachments/assets/46dab231-dff0-4d01-9966-9d99d382ab2f" /> | <img width="430" height="943" alt="Image" src="https://github.com/user-attachments/assets/02d0473d-3304-478c-b04f-9b2d62f140dc" /> |
+
+*(Catatan: Layar di atas saling terhubung menggunakan NavController dengan mem-passing parameter `noteId`)*
+
+---
+
+## 🚀 Implementasi Teknis & Arsitektur Navigasi
+
+Aplikasi ini menerapkan standar industri untuk navigasi *Compose Multiplatform*, meliputi:
+
+### 1. Sistem Navigasi Deklaratif (Navigation Component)
+Pengelolaan perpindahan antar layar diatur secara terpusat menggunakan `NavHost` dan `rememberNavController`. Rute navigasi (*routes*) dibungkus menggunakan tipe `sealed class` untuk memastikan *type-safety* dan meminimalisir kesalahan penulisan (*typo*) saat rute dipanggil.
+
+### 2. Nested Navigation (Bottom Bar & Drawer)
+Aplikasi mengimplementasikan hierarki navigasi bersarang (*nested*):
+- **Bottom Navigation:** Memiliki 3 tab utama, yaitu `Notes`, `Favorites`, dan `Profile` (mengintegrasikan profil dari iterasi sebelumnya). Pengaturan *state* dilakukan dengan hati-hati menggunakan `popUpTo` dan `launchSingleTop` untuk mencegah penumpukan *back-stack* memori saat berpindah tab.
+- **🌟 Bonus Fitur (Navigation Drawer):** Sistem navigasi diperkuat dengan implementasi `ModalNavigationDrawer` (Menu Hamburger) yang terhubung langsung ke sistem *routing* utama.
+
+### 3. Pengiriman Data Antar Layar (Passing Arguments)
+Transisi dari Daftar Catatan ke Detail Catatan atau Form Edit mengimplementasikan pengiriman argumen dinamis. Parameter ID (`noteId`) dikirim melalui URL navigasi menggunakan spesifikasi `NavType.IntType`, memastikan layar tujuan menerima referensi data yang tepat.
+
+### 4. Full CRUD Notes dengan MVVM
+Fitur Catatan tidak lagi menggunakan data statis sementara, melainkan dikelola secara reaktif oleh `NotesViewModel`. Melalui UI yang *stateless*, pengguna dapat:
+- Menambahkan catatan baru melalui *Floating Action Button*.
+- Mengedit judul dan isi catatan (*Real-time binding*).
+- Menghapus catatan secara permanen.
+- Menyematkan bintang (*Favorite*), yang secara otomatis akan memfilter dan menampilkannya khusus di tab `Favorites`.
+
+### 5. Proper Back-Stack Management
+Tombol kembali (*Back Button*) di setiap *sub-screen* (Detail, Add, Edit) telah diprogram secara native menggunakan metode `navController.popBackStack()`. Hal ini memberikan alur pengalaman pengguna (UX) yang logis, aman, dan mencegah *memory leak*.
+
+---
+
+## 📂 Pembaruan Struktur Direktori (Clean Code)
+Seiring dengan bertambahnya layar dan fitur, *source code* telah direstrukturisasi ulang ke dalam folder-folder spesifik berdasarkan pola *Separation of Concerns*:
+
+```text
+com.example.myfirstkmpapp
+│
+├── components/          # Reusable UI widget (BottomNavigationBar, DrawerContent)
+├── data/                # Definisi Model Data (ProfileUiState, Note)
+├── navigation/          # Pengaturan Routing Navigasi (AppNavigation, Screen Routes)
+├── screens/             # Kumpulan Layar Navigasi (NoteList, Detail, Add/Edit, Favorites)
+├── ui/                  # Layar Profile (Bawaan dari Tugas 4)
+├── viewmodel/           # Logic bisnis & pengelolaan StateFlow (NotesVM, ProfileVM)
+└── App.kt               # Root composition, Injection, & Status Bar Controller
+```
