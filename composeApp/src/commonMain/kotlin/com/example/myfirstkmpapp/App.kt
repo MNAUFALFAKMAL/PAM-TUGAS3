@@ -14,7 +14,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.myfirstkmpapp.ui.ProfileScreen
+import com.example.myfirstkmpapp.navigation.AppNavigation
+import com.example.myfirstkmpapp.viewmodel.NotesViewModel
 import com.example.myfirstkmpapp.viewmodel.ProfileViewModel
 
 val LightColors = lightColorScheme(
@@ -38,30 +39,27 @@ val DarkColors = darkColorScheme(
 )
 
 @Composable
-fun App(viewModel: ProfileViewModel = viewModel { ProfileViewModel() }) {
-    val uiState by viewModel.uiState.collectAsState()
-
+fun App(
+    profileViewModel: ProfileViewModel = viewModel { ProfileViewModel() },
+    notesViewModel: NotesViewModel = viewModel { NotesViewModel() }
+) {
+    val uiState by profileViewModel.uiState.collectAsState()
     val colorScheme = if (uiState.isDarkMode) DarkColors else LightColors
 
     val animatedBackground by animateColorAsState(
         targetValue = colorScheme.background,
         animationSpec = tween(durationMillis = 500)
     )
-
     MaterialTheme(colorScheme = colorScheme) {
+        StatusBarColors(
+            isDarkMode = uiState.isDarkMode,
+            color = colorScheme.primaryContainer
+        )
         Box(modifier = Modifier.fillMaxSize().background(animatedBackground)) {
-
-            ProfileScreen(
-                uiState = uiState,
-                onNameChange = { viewModel.updateName(it) },
-                onBioChange = { viewModel.updateBio(it) },
-                onEmailChange = {viewModel.updateEmail(newEmail = it)},
-                onPhoneChange = {viewModel.updatePhone(newPhone = it)},
-                onLocationChange = {viewModel.updateLocation(newLocation = it)},
-                onToggleBio = { viewModel.toggleBioVisibility() },
-                onToggleEdit = { viewModel.toggleEditMode() },
-                onToggleDarkMode = { viewModel.toggleDarkMode() }
-            )
+            AppNavigation(profileViewModel, notesViewModel)
         }
     }
 }
+
+@Composable
+expect fun StatusBarColors(isDarkMode: Boolean, color: Color)
