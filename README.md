@@ -125,7 +125,7 @@ Pada iterasi ke-6 ini, aplikasi dikembangkan untuk mampu berkomunikasi dengan du
 
 | Daftar Artikel (Tech News) | Detail Artikel | State Loading & Error |
 | :---: | :---: | :---: |
-| <img width="367" height="803" alt="Image" src="https://github.com/user-attachments/assets/60fc4630-376a-4e7d-a7f0-a26ffca81d96" /> | <img width="367" height="803" alt="Image" src="https://github.com/user-attachments/assets/5f305f94-325e-4779-adff-0851e4832881" /> | <img width="367" height="803" alt="Image" src="https://github.com/user-attachments/assets/5f305f94-325e-4779-adff-0851e4832881" /> |
+| <img width="367" height="803" alt="Image" src="https://github.com/user-attachments/assets/60fc4630-376a-4e7d-a7f0-a26ffca81d96" /> | <img width="367" height="803" alt="Image" src="https://github.com/user-attachments/assets/5f305f94-325e-4779-adff-0851e4832881" /> | <img width="367" height="803" alt="Image" src="https://github.com/user-attachments/assets/408a8444-86ca-4d45-9ebf-71da56f71a4a" /> |
 
 ---
 
