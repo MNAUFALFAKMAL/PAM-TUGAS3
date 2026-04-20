@@ -116,3 +116,68 @@ com.example.myfirstkmpapp
 ├── viewmodel/           # Logic bisnis & pengelolaan StateFlow (NotesVM, ProfileVM)
 └── App.kt               # Root composition, Injection, & Status Bar Controller
 ```
+# Tugas 6 - Pengembangan Aplikasi Mobile
+## Pembaruan: Networking (REST API), Ktor Client & Tech News Integration
+
+Pada iterasi ke-6 ini, aplikasi dikembangkan untuk mampu berkomunikasi dengan dunia luar melalui integrasi **REST API**. Fokus utama pengembangan adalah penerapan fitur **Networking** untuk mengambil artikel pemrograman dan teknologi terkini secara dinamis dari **DEV Community API**. Aplikasi kini beralih dari penyimpanan data lokal statis menjadi aplikasi pembaca berita yang interaktif dengan balutan **Orange Theme (Tema Oren)**.
+
+## 📸 Tampilan Fitur Terbaru (Orange Theme)
+
+| Daftar Artikel (Tech News) | Detail Artikel | State Loading & Error |
+| :---: | :---: | :---: |
+| <img width="367" height="803" alt="Image" src="https://github.com/user-attachments/assets/60fc4630-376a-4e7d-a7f0-a26ffca81d96" /> | <img width="367" height="803" alt="Image" src="https://github.com/user-attachments/assets/5f305f94-325e-4779-adff-0851e4832881" /> | <img width="367" height="803" alt="Image" src="https://github.com/user-attachments/assets/408a8444-86ca-4d45-9ebf-71da56f71a4a" /> |
+
+---
+
+## 🚀 Implementasi Teknis & Fitur Networking
+
+Sebagai bagian dari pemenuhan rubrik penilaian Pertemuan 6, berikut adalah rincian teknis yang diimplementasikan:
+
+### 1. Integrasi Ktor Client (Multiplatform Networking)
+Pengambilan data dilakukan menggunakan **Ktor Client**. Saya mengonfigurasi `HttpClient` dengan engine yang mendukung multiplatform (Android & iOS). Proses *request* dilakukan secara asinkron di *background thread* menggunakan *Kotlin Coroutines* agar antarmuka pengguna tetap responsif.
+
+### 2. Automated JSON Serialization
+Data mentah berupa JSON yang diterima dari API diproses secara otomatis menggunakan library **Kotlinx Serialization**. Struktur data API dari DEV Community dipetakan langsung ke dalam objek Kotlin (`DevArticle`) menggunakan anotasi `@Serializable`, memastikan integritas data terjaga sejak dari *Data Layer*.
+
+### 3. Arsitektur Repository Pattern
+Untuk menjaga prinsip *Clean Architecture*, saya mengimplementasikan **Repository Pattern** (`DevRepository`). Kelas ini bertugas mengabstraksi sumber data, sehingga ViewModel tidak perlu tahu detail teknis tentang bagaimana data diambil atau dari URL mana data tersebut berasal.
+
+### 4. Manajemen UI State (Loading, Success, Error)
+Aplikasi menangani tiga kondisi utama saat melakukan *fetch data*:
+- **Loading:** Menampilkan *Circular Progress Indicator* berwarna oren saat proses unduh berlangsung.
+- **Success:** Menampilkan daftar kartu artikel yang berisi judul, deskripsi singkat, dan tombol interaktif.
+- **Error:** Memberikan umpan balik visual jika terjadi gangguan koneksi atau *server error*, lengkap dengan tombol **"Muat Ulang Data"** untuk mencoba kembali.
+
+### 5. Bookmark & Detail Navigation
+Data yang diambil dari API tetap terintegrasi dengan fitur navigasi dan *state management* dari tugas sebelumnya:
+- **Bookmark:** Pengguna dapat menandai artikel teknologi favorit mereka (disimpan dalam `StateFlow`).
+- **Detail View:** Navigasi menuju konten lengkap artikel dengan *passing data* objek secara dinamis.
+
+---
+
+## 📂 Struktur Direktori Terbaru (Modularized)
+Struktur proyek pada folder `MyFirstKMPApp1` telah disesuaikan untuk mendukung fitur networking:
+
+```text
+com.example.myfirstkmpapp
+│
+├── data/
+│   ├── DevArticle.kt        # Data Class (Model JSON)
+│   ├── DevRepository.kt     # Abstraksi Data Jaringan (Repository)
+│   └── HttpClientFactory.kt # Konfigurasi Engine Ktor
+├── ui/
+│   ├── ResultState.kt       # Sealed Interface untuk Loading/Success/Error
+│   ├── DevViewModel.kt      # Pengelola State Jaringan & Bookmark
+│   ├── DevScreen.kt         # Layar Daftar Artikel (Orange UI)
+│   └── ArticleDetailScreen.kt# Layar Detail Konten
+└── App.kt                   # Entry Point & Pengaturan Orange Theme
+```
+
+## 📡 API Reference
+- **Source:** DEV Community API
+- **Endpoint:** `https://dev.to/api/articles?per_page=20`
+- **Metode:** `GET`
+
+## 🎥 Video Demonstrasi
+Link rekaman demonstrasi fitur Networking dan REST API:
+- **Video Link:** https://drive.google.com/file/d/132mP_3jNdsq4SwQzz63XFXdU5aa6sn_7/view?usp=drive_link
