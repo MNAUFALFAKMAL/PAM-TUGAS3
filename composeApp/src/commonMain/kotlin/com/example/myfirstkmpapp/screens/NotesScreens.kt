@@ -9,6 +9,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,7 +17,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.myfirstkmpapp.NoteEntity
+import com.example.myfirstkmpapp.platform.DeviceInfo
 import com.example.myfirstkmpapp.viewmodel.NotesViewModel
+import org.koin.compose.koinInject
 
 @Composable
 fun NotesListScreen(
@@ -97,4 +100,38 @@ fun NoteDialog(
             TextButton(onClick = onDismiss) { Text("Batal") }
         }
     )
+}
+
+@Composable
+fun SettingsScreen(
+    deviceInfo: DeviceInfo = koinInject()
+) {
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        Text("Pengaturan", style = MaterialTheme.typography.h5, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Card(
+            elevation = 4.dp,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Info, contentDescription = "Device Info", tint = MaterialTheme.colors.primary)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Informasi Perangkat", style = MaterialTheme.typography.subtitle1, fontWeight = FontWeight.Bold)
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("Model: ${deviceInfo.deviceModel}")
+                Text("OS: ${deviceInfo.osName}")
+                Text("Versi: ${deviceInfo.osVersion}")
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = deviceInfo.getSummary(),
+                    style = MaterialTheme.typography.body2,
+                    color = Color.Gray
+                )
+            }
+        }
+    }
 }

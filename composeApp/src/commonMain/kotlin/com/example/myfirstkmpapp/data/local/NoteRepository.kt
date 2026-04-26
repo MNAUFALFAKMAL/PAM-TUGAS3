@@ -20,7 +20,6 @@ class NoteRepository(database: NotesDatabase) {
     suspend fun update(id: Long, title: String, content: String) {
         queries.updateNote(title, content, id)
     }
-
     suspend fun delete(id: Long) {
         queries.deleteNote(id)
     }

@@ -11,10 +11,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.myfirstkmpapp.platform.NetworkMonitor
 import com.example.myfirstkmpapp.screens.NoteDialog
 import com.example.myfirstkmpapp.screens.NotesListScreen
+import com.example.myfirstkmpapp.screens.SettingsScreen
 import com.example.myfirstkmpapp.viewmodel.NotesViewModel
+import org.koin.compose.koinInject
 
 val LightColors = lightColors(
     primary = Color(0xFFE65100),
@@ -39,13 +43,20 @@ val DarkColors = darkColors(
 )
 
 @Composable
-fun App(viewModel: NotesViewModel) {
+fun App() {
+    val viewModel = koinInject<NotesViewModel>()
+    val networkMonitor = koinInject<NetworkMonitor>()
+
+    val isConnected by networkMonitor.isConnected.collectAsState()
     val isDark by viewModel.isDarkMode.collectAsState()
     val isSortByNewest by viewModel.isSortByNewest.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
+
     var showDialog by remember { mutableStateOf(false) }
     var expandedSortMenu by remember { mutableStateOf(false) }
     var editingNote by remember { mutableStateOf<NoteEntity?>(null) }
+    var currentScreen by remember { mutableStateOf("home") }
+
     val colorScheme = if (isDark) DarkColors else LightColors
     val animatedBackground by animateColorAsState(
         targetValue = colorScheme.background,
@@ -63,66 +74,83 @@ fun App(viewModel: NotesViewModel) {
                     TopAppBar(
                         backgroundColor = MaterialTheme.colors.primary,
                         title = {
-                            TextField(
-                                value = searchQuery,
-                                onValueChange = { viewModel.onSearchQueryChange(it) },
-                                placeholder = {
-                                    Text(
-                                        "Cari catatan...",
-                                        color = MaterialTheme.colors.onPrimary.copy(alpha = 0.7f)
-                                    )
-                                },
-                                leadingIcon = {
-                                    Icon(Icons.Default.Search, null, tint = MaterialTheme.colors.onPrimary)
-                                },
-                                colors = TextFieldDefaults.textFieldColors(
-                                    textColor = MaterialTheme.colors.onPrimary,
-                                    backgroundColor = Color.Transparent,
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent,
-                                    cursorColor = MaterialTheme.colors.onPrimary
-                                ),
-                                singleLine = true
-                            )
+                            if (currentScreen == "home") {
+                                TextField(
+                                    value = searchQuery,
+                                    onValueChange = { viewModel.onSearchQueryChange(it) },
+                                    placeholder = {
+                                        Text(
+                                            "Cari catatan...",
+                                            color = MaterialTheme.colors.onPrimary.copy(alpha = 0.7f)
+                                        )
+                                    },
+                                    leadingIcon = {
+                                        Icon(Icons.Default.Search, null, tint = MaterialTheme.colors.onPrimary)
+                                    },
+                                    colors = TextFieldDefaults.textFieldColors(
+                                        textColor = MaterialTheme.colors.onPrimary,
+                                        backgroundColor = Color.Transparent,
+                                        focusedIndicatorColor = Color.Transparent,
+                                        unfocusedIndicatorColor = Color.Transparent,
+                                        cursorColor = MaterialTheme.colors.onPrimary
+                                    ),
+                                    singleLine = true
+                                )
+                            } else {
+                                Text("Pengaturan", color = MaterialTheme.colors.onPrimary)
+                            }
                         },
                         actions = {
-                            Box {
-                                IconButton(onClick = { expandedSortMenu = true }) {
+                            if (currentScreen == "home") {
+                                Box {
+                                    IconButton(onClick = { expandedSortMenu = true }) {
+                                        Icon(
+                                            Icons.Default.Sort,
+                                            contentDescription = "Filter",
+                                            tint = MaterialTheme.colors.onPrimary
+                                        )
+                                    }
+                                    DropdownMenu(
+                                        expanded = expandedSortMenu,
+                                        onDismissRequest = { expandedSortMenu = false }
+                                    ) {
+                                        DropdownMenuItem(onClick = {
+                                            viewModel.setSortOrder(true)
+                                            expandedSortMenu = false
+                                        }) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text("Terbaru")
+                                                if (isSortByNewest) Icon(Icons.Default.Check, null, modifier = Modifier.padding(start = 8.dp))
+                                            }
+                                        }
+                                        DropdownMenuItem(onClick = {
+                                            viewModel.setSortOrder(false)
+                                            expandedSortMenu = false
+                                        }) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text("Terlama")
+                                                if (!isSortByNewest) Icon(Icons.Default.Check, null, modifier = Modifier.padding(start = 8.dp))
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Fitur Toggle Tema
+                                IconButton(onClick = { viewModel.toggleTheme() }) {
                                     Icon(
-                                        Icons.Default.Sort,
-                                        contentDescription = "Filter",
+                                        if (isDark) Icons.Default.LightMode else Icons.Default.DarkMode,
+                                        contentDescription = "Toggle Theme",
                                         tint = MaterialTheme.colors.onPrimary
                                     )
                                 }
-                                DropdownMenu(
-                                    expanded = expandedSortMenu,
-                                    onDismissRequest = { expandedSortMenu = false }
-                                ) {
-                                    DropdownMenuItem(onClick = {
-                                        viewModel.setSortOrder(true)
-                                        expandedSortMenu = false
-                                    }) {
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Text("Terbaru")
-                                            if (isSortByNewest) Icon(Icons.Default.Check, null, modifier = Modifier.padding(start = 8.dp))
-                                        }
-                                    }
-                                    DropdownMenuItem(onClick = {
-                                        viewModel.setSortOrder(false)
-                                        expandedSortMenu = false
-                                    }) {
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Text("Terlama")
-                                            if (!isSortByNewest) Icon(Icons.Default.Check, null, modifier = Modifier.padding(start = 8.dp))
-                                        }
-                                    }
-                                }
                             }
 
-                            IconButton(onClick = { viewModel.toggleTheme() }) {
+                            IconButton(onClick = {
+                                currentScreen = if (currentScreen == "home") "settings" else "home"
+                            }) {
                                 Icon(
-                                    if (isDark) Icons.Default.LightMode else Icons.Default.DarkMode,
-                                    contentDescription = "Toggle Theme",
+                                    if (currentScreen == "home") Icons.Default.Settings else Icons.Default.Home,
+                                    contentDescription = "Toggle Screen",
                                     tint = MaterialTheme.colors.onPrimary
                                 )
                             }
@@ -130,43 +158,62 @@ fun App(viewModel: NotesViewModel) {
                     )
                 },
                 floatingActionButton = {
-                    FloatingActionButton(
-                        onClick = {
-                            editingNote = null
-                            showDialog = true
-                        },
-                        backgroundColor = MaterialTheme.colors.primary
-                    ) {
-                        Icon(
-                            Icons.Default.Add,
-                            contentDescription = "Tambah Catatan",
-                            tint = MaterialTheme.colors.onPrimary
-                        )
+                    if (currentScreen == "home") {
+                        FloatingActionButton(
+                            onClick = {
+                                editingNote = null
+                                showDialog = true
+                            },
+                            backgroundColor = MaterialTheme.colors.primary
+                        ) {
+                            Icon(
+                                Icons.Default.Add,
+                                contentDescription = "Tambah Catatan",
+                                tint = MaterialTheme.colors.onPrimary
+                            )
+                        }
                     }
                 }
-            ) { padding ->
-                Column(modifier = Modifier.padding(padding)) {
-                    NotesListScreen(
-                        viewModel = viewModel,
-                        onEditClick = { note ->
-                            editingNote = note
-                            showDialog = true
-                        }
-                    )
-                }
+            ) { paddingValues ->
+                Column(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
 
-                if (showDialog) {
-                    NoteDialog(
-                        initialTitle = editingNote?.title ?: "",
-                        initialContent = editingNote?.content ?: "",
-                        onDismiss = { showDialog = false },
-                        onSave = { title, content ->
-                            if (title.isNotBlank()) {
-                                viewModel.addOrUpdateNote(editingNote?.id, title, content)
-                                showDialog = false
-                            }
+                    if (!isConnected) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().background(Color.Red).padding(8.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.Warning, contentDescription = "Offline", tint = Color.White)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Anda sedang Offline", color = Color.White, fontWeight = FontWeight.Bold)
                         }
-                    )
+                    }
+
+                    if (currentScreen == "home") {
+                        NotesListScreen(
+                            viewModel = viewModel,
+                            onEditClick = { note ->
+                                editingNote = note
+                                showDialog = true
+                            }
+                        )
+                    } else {
+                        SettingsScreen()
+                    }
+
+                    if (showDialog) {
+                        NoteDialog(
+                            initialTitle = editingNote?.title ?: "",
+                            initialContent = editingNote?.content ?: "",
+                            onDismiss = { showDialog = false },
+                            onSave = { title, content ->
+                                if (title.isNotBlank()) {
+                                    viewModel.addOrUpdateNote(editingNote?.id, title, content)
+                                    showDialog = false
+                                }
+                            }
+                        )
+                    }
                 }
             }
         }
